@@ -145,9 +145,8 @@
   <!-- Firebase + Countdown -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-    import { getDatabase, ref, push, set, onValue, update } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
+    import { getDatabase, ref, child, push, set, onValue, update, remove } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
 
-    // Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyDZ1qt1QZs5kGmoGgrar_WH330OxRWery4",
       authDomain: "boss-tracker-5488e.firebaseapp.com",
@@ -177,7 +176,7 @@
     const navDashboard = document.getElementById("navDashboard");
     const navBossList = document.getElementById("navBossList");
 
-    // Switch views
+    // Navigation
     navDashboard.addEventListener("click", () => {
       dashboardSection.style.display = "block";
       bossListSection.style.display = "none";
@@ -187,7 +186,7 @@
       bossListSection.style.display = "block";
     });
 
-    // Compute Next Spawn
+    // Auto calculate Next Spawn
     function calculateNextSpawn() {
       const hours = parseFloat(hourSpawnInput.value);
       const lastKilledValue = lastKilledTimeInput.value;
@@ -202,7 +201,7 @@
     hourSpawnInput.addEventListener("input", calculateNextSpawn);
     lastKilledTimeInput.addEventListener("input", calculateNextSpawn);
 
-    // Save or edit boss
+    // Save or update
     bossForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const boss = bossNameInput.value.trim();
@@ -210,13 +209,12 @@
       const lastKilled = lastKilledTimeInput.value;
       const nextSpawn = nextSpawnInput.value;
       const editKey = editKeyInput.value;
-
       const entry = { boss, hourSpawn, lastKilled, nextSpawn };
 
       if (editKey) {
         await update(ref(db, "bosses/" + editKey), entry);
       } else {
-        const newRef = push(ref(db, "bosses"));
+        const newRef = push(child(ref(db), "bosses"));
         await set(newRef, entry);
       }
 
@@ -226,27 +224,27 @@
       bossModal.hide();
     });
 
-    // Render data and initialize countdowns
+    // Render
     function render(data) {
       bossTableBody.innerHTML = "";
       dashboardCards.innerHTML = "";
-
       data.forEach((item) => {
         const key = item.key;
         const entry = item.val();
 
-        // Table
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${entry.boss}</td>
           <td>${entry.hourSpawn} hr</td>
           <td>${entry.lastKilled}</td>
           <td>${entry.nextSpawn}</td>
-          <td><button class="btn btn-sm btn-warning" onclick="editRow('${key}', '${entry.boss}', '${entry.hourSpawn}', '${entry.lastKilled}', '${entry.nextSpawn}')">Edit</button></td>
+          <td>
+            <button class="btn btn-sm btn-warning me-1" onclick="editRow('${key}', '${entry.boss}', '${entry.hourSpawn}', '${entry.lastKilled}', '${entry.nextSpawn}')">Edit</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteRow('${key}')">Delete</button>
+          </td>
         `;
         bossTableBody.appendChild(row);
 
-        // Dashboard card
         const card = document.createElement("div");
         card.classList.add("col-md-4");
         card.innerHTML = `
@@ -259,14 +257,14 @@
       });
     }
 
-    // Listen for updates
+    // Listen for realtime changes
     onValue(ref(db, "bosses"), (snapshot) => {
       const data = [];
       snapshot.forEach((child) => data.push(child));
       render(data);
     });
 
-    // Global edit
+    // Global edit/delete
     window.editRow = (key, boss, hourSpawn, lastKilled, nextSpawn) => {
       document.getElementById("bossModalLabel").textContent = "Edit Boss Entry";
       bossNameInput.value = boss;
@@ -277,7 +275,13 @@
       bossModal.show();
     };
 
-    // Countdown update loop
+    window.deleteRow = async (key) => {
+      if (confirm("Are you sure you want to delete this boss?")) {
+        await remove(ref(db, "bosses/" + key));
+      }
+    };
+
+    // Countdown
     setInterval(() => {
       document.querySelectorAll(".countdown").forEach((el) => {
         const key = el.id.replace("countdown-", "");
@@ -285,13 +289,11 @@
         const nextTimeText = card.querySelector("p strong").textContent;
         const nextTime = new Date(nextTimeText);
         const now = new Date();
-
         const diff = nextTime - now;
         if (isNaN(diff)) {
           el.textContent = "--:--:--";
           return;
         }
-
         if (diff <= 0) {
           el.textContent = "Spawned!";
           el.style.color = "red";
