@@ -142,7 +142,7 @@
     </div>
   </div>
 
-  <!-- Firebase Integration -->
+  <!-- Firebase + Countdown -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
     import { getDatabase, ref, push, set, onValue, update } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
@@ -226,7 +226,7 @@
       bossModal.hide();
     });
 
-    // Render data
+    // Render data and initialize countdowns
     function render(data) {
       bossTableBody.innerHTML = "";
       dashboardCards.innerHTML = "";
@@ -246,21 +246,20 @@
         `;
         bossTableBody.appendChild(row);
 
-        // Dashboard
-        const nextSpawnTime = new Date(entry.nextSpawn);
+        // Dashboard card
         const card = document.createElement("div");
         card.classList.add("col-md-4");
         card.innerHTML = `
           <div class="boss-card">
             <h5>${entry.boss}</h5>
-            <p>Next Spawn: <strong>${nextSpawnTime.toLocaleString()}</strong></p>
+            <p>Next Spawn: <strong>${new Date(entry.nextSpawn).toLocaleString()}</strong></p>
             <div class="countdown" id="countdown-${key}">--:--:--</div>
           </div>`;
         dashboardCards.appendChild(card);
       });
     }
 
-    // Fetch and listen for updates
+    // Listen for updates
     onValue(ref(db, "bosses"), (snapshot) => {
       const data = [];
       snapshot.forEach((child) => data.push(child));
@@ -278,14 +277,34 @@
       bossModal.show();
     };
 
-    // Countdown refresh
+    // Countdown update loop
     setInterval(() => {
       document.querySelectorAll(".countdown").forEach((el) => {
         const key = el.id.replace("countdown-", "");
-        const refPath = "bosses/" + key;
+        const card = el.closest(".boss-card");
+        const nextTimeText = card.querySelector("p strong").textContent;
+        const nextTime = new Date(nextTimeText);
+        const now = new Date();
+
+        const diff = nextTime - now;
+        if (isNaN(diff)) {
+          el.textContent = "--:--:--";
+          return;
+        }
+
+        if (diff <= 0) {
+          el.textContent = "Spawned!";
+          el.style.color = "red";
+        } else {
+          const hrs = Math.floor(diff / (1000 * 60 * 60));
+          const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          const secs = Math.floor((diff % (1000 * 60)) / 1000);
+          el.textContent = `${hrs.toString().padStart(2, "0")}:${mins
+            .toString()
+            .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+        }
       });
     }, 1000);
   </script>
-
 </body>
 </html>
