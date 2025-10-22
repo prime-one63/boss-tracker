@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Boss Spawn Dashboard</title>
+  <title>Boss Tracker Dashboard</title>
 
+  <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -46,7 +47,7 @@
 
   <!-- Sidebar -->
   <div class="sidebar">
-    <h4>Cloud 9 Boss Tracker</h4>
+    <h4>Boss Tracker</h4>
     <a href="#" id="navDashboard" class="active">Dashboard</a>
     <a href="#" id="navBossList">Boss List</a>
   </div>
@@ -63,11 +64,13 @@
 
   <!-- Main Content -->
   <div class="content">
+    <!-- Dashboard Section -->
     <div id="dashboardSection">
       <h3 class="mb-4">Boss Spawn Dashboard</h3>
       <div id="dashboardCards" class="row gy-3"></div>
     </div>
 
+    <!-- Boss List Section -->
     <div id="bossListSection" style="display:none;">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h3>Boss List Tracker</h3>
@@ -81,9 +84,9 @@
               <tr>
                 <th>Boss</th>
                 <th>Hour Spawn</th>
-                <th>Last Killed Time</th>
+                <th>Last Killed</th>
                 <th>Next Spawn</th>
-                <th>Action</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -93,39 +96,34 @@
     </div>
   </div>
 
-  <!-- Modal -->
+  <!-- Modal for Add/Edit -->
   <div class="modal fade" id="bossModal" tabindex="-1" aria-labelledby="bossModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <form id="bossForm">
           <div class="modal-header">
-            <h5 class="modal-title" id="bossModalLabel">Add Boss Entry</h5>
+            <h5 class="modal-title" id="bossModalLabel">Add Boss</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
             <input type="hidden" id="editKey" />
-
             <div class="mb-3">
-              <label class="form-label">Boss</label>
+              <label class="form-label">Boss Name</label>
               <input type="text" class="form-control" id="bossName" required />
             </div>
-
             <div class="mb-3">
-              <label class="form-label">Hour Spawn (interval)</label>
-              <input type="number" class="form-control" id="hourSpawn" min="1" required />
+              <label class="form-label">Spawn Interval (Hours)</label>
+              <input type="number" class="form-control" id="bossHour" min="1" required />
             </div>
-
             <div class="mb-3">
-              <label class="form-label">Last Killed Time</label>
-              <input type="datetime-local" class="form-control" id="lastKilledTime" required />
+              <label class="form-label">Last Killed</label>
+              <input type="datetime-local" class="form-control" id="lastKilled" required />
             </div>
-
             <div class="mb-3">
-              <label class="form-label">Next Spawn (auto-calculated)</label>
+              <label class="form-label">Next Spawn (Auto)</label>
               <input type="datetime-local" class="form-control" id="nextSpawn" readonly />
             </div>
           </div>
-
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
             <button type="submit" class="btn btn-primary">Save</button>
@@ -135,239 +133,199 @@
     </div>
   </div>
 
-  <!-- Firebase + IndexedDB Logic -->
+  <!-- Firebase + Logic -->
   <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-  import { getDatabase, ref, push, set, onValue, update, remove } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, push, set, onValue, update, remove, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-  // ✅ Fixed Firebase config (correct storageBucket)
-  const firebaseConfig = {
-    apiKey: "AIzaSyDZ1qt1QZs5kGmoGgrar_WH330OxRWery4",
-    authDomain: "boss-tracker-5488e.firebaseapp.com",
-    databaseURL: "https://boss-tracker-5488e-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "boss-tracker-5488e",
-    storageBucket: "boss-tracker-5488e.appspot.com",
-    messagingSenderId: "285894450263",
-    appId: "1:285894450263:web:444e346cd7d50d8a181712",
-    measurementId: "G-LB9Z0Y1CL3"
-  };
-
-  // ✅ Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-  console.log("✅ Firebase initialized:", app.name);
-  console.log("✅ Database connected:", db);
-
-  // DOM references
-  const bossForm = document.getElementById("bossForm");
-  const bossTableBody = document.querySelector("#bossTable tbody");
-  const bossModal = new bootstrap.Modal(document.getElementById("bossModal"));
-  const bossNameInput = document.getElementById("bossName");
-  const hourSpawnInput = document.getElementById("hourSpawn");
-  const lastKilledTimeInput = document.getElementById("lastKilledTime");
-  const nextSpawnInput = document.getElementById("nextSpawn");
-  const editKeyInput = document.getElementById("editKey");
-  const dashboardCards = document.getElementById("dashboardCards");
-  const toast = new bootstrap.Toast(document.getElementById("saveToast"));
-
-  const dashboardSection = document.getElementById("dashboardSection");
-  const bossListSection = document.getElementById("bossListSection");
-  const navDashboard = document.getElementById("navDashboard");
-  const navBossList = document.getElementById("navBossList");
-
-  console.log("Boss Tracker loaded. Watching Firebase connection...");
-
-  // ✅ IndexedDB Setup
-  const dbPromise = indexedDB.open("BossTrackerDB", 1);
-  dbPromise.onupgradeneeded = (event) => {
-    const db = event.target.result;
-    db.createObjectStore("bosses", { keyPath: "key" });
-  };
-
-  function saveLocalBosses(bossArray) {
-    const req = indexedDB.open("BossTrackerDB", 1);
-    req.onsuccess = (e) => {
-      const db = e.target.result;
-      const tx = db.transaction("bosses", "readwrite");
-      const store = tx.objectStore("bosses");
-      store.clear();
-      bossArray.forEach((b) => store.put({ key: b.key, val: b.val }));
+    const firebaseConfig = {
+      apiKey: "AIzaSyDZ1qt1QZs5kGmoGgrar_WH330OxRWery4",
+      authDomain: "boss-tracker-5488e.firebaseapp.com",
+      databaseURL: "https://boss-tracker-5488e-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "boss-tracker-5488e",
+      storageBucket: "boss-tracker-5488e.firebasestorage.app",
+      messagingSenderId: "285894450263",
+      appId: "1:285894450263:web:444e346cd7d50d8a181712",
+      measurementId: "G-LB9Z0Y1CL3"
     };
-  }
 
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-  function loadLocalBosses(callback) {
-    const req = indexedDB.open("BossTrackerDB", 1);
-    req.onsuccess = (e) => {
-      const db = e.target.result;
-      const tx = db.transaction("bosses", "readonly");
-      const store = tx.objectStore("bosses");
-      const getAll = store.getAll();
-      getAll.onsuccess = () => callback(getAll.result.map((b) => ({ key: b.key, val: b.val })));
-    };
-  }
+    // UI Elements
+    const dashboardSection = document.getElementById("dashboardSection");
+    const bossListSection = document.getElementById("bossListSection");
+    const navDashboard = document.getElementById("navDashboard");
+    const navBossList = document.getElementById("navBossList");
+    const bossForm = document.getElementById("bossForm");
+    const bossModal = new bootstrap.Modal(document.getElementById("bossModal"));
+    const bossTable = document.querySelector("#bossTable tbody");
+    const toast = new bootstrap.Toast(document.getElementById("saveToast"));
+    const dashboardCards = document.getElementById("dashboardCards");
 
-  // ✅ Navigation
-  navDashboard.addEventListener("click", () => {
-    navDashboard.classList.add("active");
-    navBossList.classList.remove("active");
-    dashboardSection.style.display = "block";
-    bossListSection.style.display = "none";
-  });
+    const bossName = document.getElementById("bossName");
+    const bossHour = document.getElementById("bossHour");
+    const lastKilled = document.getElementById("lastKilled");
+    const nextSpawn = document.getElementById("nextSpawn");
+    const editKey = document.getElementById("editKey");
 
-  navBossList.addEventListener("click", () => {
-    navBossList.classList.add("active");
-    navDashboard.classList.remove("active");
-    dashboardSection.style.display = "none";
-    bossListSection.style.display = "block";
-  });
+    const ADMIN_TOKEN = "BOSS-ADMIN-2025";
+    let isAuthorized = false;
 
-  // ✅ Calculate next spawn time
-  function calculateNextSpawn() {
-    const hours = parseFloat(hourSpawnInput.value);
-    const lastKilledValue = lastKilledTimeInput.value;
-    if (!isNaN(hours) && lastKilledValue) {
-      const lastKilled = new Date(lastKilledValue);
-      const nextSpawn = new Date(lastKilled.getTime() + hours * 60 * 60 * 1000);
-      const localISO = new Date(nextSpawn.getTime() - nextSpawn.getTimezoneOffset() * 60000)
-        .toISOString().slice(0, 16);
-      nextSpawnInput.value = localISO;
-    }
-  }
-  hourSpawnInput.addEventListener("input", calculateNextSpawn);
-  lastKilledTimeInput.addEventListener("input", calculateNextSpawn);
+    // --- Navigation ---
+    navDashboard.addEventListener("click", () => {
+      navDashboard.classList.add("active");
+      navBossList.classList.remove("active");
+      dashboardSection.style.display = "block";
+      bossListSection.style.display = "none";
+    });
 
-  // ✅ Form Submit Handler (Add/Edit)
-  bossForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    console.log("🟩 Form submitted");
-
-    const boss = bossNameInput.value.trim();
-    const hourSpawn = parseFloat(hourSpawnInput.value);
-    const lastKilled = lastKilledTimeInput.value;
-    const nextSpawn = nextSpawnInput.value;
-    const editKey = editKeyInput.value;
-
-    const entry = { boss, hourSpawn, lastKilled, nextSpawn };
-
-    try {
-      if (editKey) {
-        await update(ref(db, "bosses/" + editKey), entry);
-        console.log("🟨 Updated boss:", editKey);
-      } else {
-        const newRef = push(ref(db, "bosses"));
-        await set(newRef, entry);
-        console.log("🟩 Added new boss:", newRef.key);
+    navBossList.addEventListener("click", async () => {
+      if (!isAuthorized) {
+        const entered = prompt("Enter admin access token:");
+        if (!entered) {
+          alert("❌ Invalid token");
+          return;
+        }
+        try {
+          // check token in Firebase: tokens/{entered} == true
+          const tokenRef = ref(db, "tokens/" + entered.trim());
+          const snap = await get(tokenRef);
+          if (!snap.exists() || snap.val() !== true) {
+            alert("❌ Invalid token");
+            return;
+          }
+          // token valid
+          alert("✅ Access granted!");
+          isAuthorized = true;
+        } catch (err) {
+          console.error("Token check failed:", err);
+          alert("❌ Token check error (see console).");
+          return;
+        }
       }
 
+      navBossList.classList.add("active");
+      navDashboard.classList.remove("active");
+      dashboardSection.style.display = "none";
+      bossListSection.style.display = "block";
+    });
+
+    // --- Auto Calculate Next Spawn ---
+    function calcNextSpawn() {
+      const hours = parseFloat(bossHour.value);
+      if (hours && lastKilled.value) {
+        const d = new Date(lastKilled.value);
+        d.setHours(d.getHours() + hours);
+        const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0,16);
+        nextSpawn.value = local;
+      }
+    }
+    bossHour.addEventListener("input", calcNextSpawn);
+    lastKilled.addEventListener("input", calcNextSpawn);
+
+    // --- Save Boss ---
+    bossForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const entry = {
+        bossName: bossName.value.trim(),
+        bossHour: bossHour.value,
+        lastKilled: lastKilled.value,
+        nextSpawn: nextSpawn.value
+      };
+      if (editKey.value) {
+        await update(ref(db, "bosses/" + editKey.value), entry);
+      } else {
+        await set(push(ref(db, "bosses")), entry);
+      }
       bossForm.reset();
-      nextSpawnInput.value = "";
-      editKeyInput.value = "";
+      nextSpawn.value = "";
+      editKey.value = "";
       bossModal.hide();
       toast.show();
-    } catch (err) {
-      console.error("❌ Error saving boss:", err);
-      alert("Error saving boss. Check console for details.");
-    }
-  });
-
-  // ✅ Render Boss List and Dashboard
-  function render(data) {
-    bossTableBody.innerHTML = "";
-    dashboardCards.innerHTML = "";
-
-    data.forEach((item) => {
-      const key = item.key;
-      const entry = item.val;
-
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${entry.boss}</td>
-        <td>${entry.hourSpawn} hr</td>
-        <td>${entry.lastKilled}</td>
-        <td>${entry.nextSpawn}</td>
-        <td>
-          <button class="btn btn-sm btn-warning me-1 edit-btn" data-key="${key}">Edit</button>
-          <button class="btn btn-sm btn-danger delete-btn" data-key="${key}">Delete</button>
-        </td>`;
-      bossTableBody.appendChild(row);
-
-      const card = document.createElement("div");
-      card.classList.add("col-md-4");
-      card.innerHTML = `
-        <div class="boss-card">
-          <h5>${entry.boss}</h5>
-          <p>Next Spawn: <strong>${new Date(entry.nextSpawn).toLocaleString()}</strong></p>
-          <div class="countdown" id="countdown-${key}">--:--:--</div>
-        </div>`;
-      dashboardCards.appendChild(card);
     });
 
-    document.querySelectorAll(".edit-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const key = btn.dataset.key;
-        const entry = data.find((child) => child.key === key).val();
+    // --- Render ---
+    onValue(ref(db, "bosses"), (snapshot) => {
+      bossTable.innerHTML = "";
+      dashboardCards.innerHTML = "";
 
-        document.getElementById("bossModalLabel").textContent = "Edit Boss Entry";
-        bossNameInput.value = entry.boss;
-        hourSpawnInput.value = entry.hourSpawn;
-        lastKilledTimeInput.value = entry.lastKilled;
-        nextSpawnInput.value = entry.nextSpawn;
-        editKeyInput.value = key;
-        bossModal.show();
+      snapshot.forEach((child) => {
+        const key = child.key;
+        const b = child.val();
+
+        // Table
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${b.bossName}</td>
+          <td>${b.bossHour} hr</td>
+          <td>${b.lastKilled}</td>
+          <td>${b.nextSpawn}</td>
+          <td>
+            <button class="btn btn-warning btn-sm edit-btn" data-id="${key}">Edit</button>
+            <button class="btn btn-danger btn-sm delete-btn" data-id="${key}">Delete</button>
+          </td>`;
+        bossTable.appendChild(tr);
+
+        // Dashboard Card
+        const card = document.createElement("div");
+        card.className = "col-md-4";
+        card.innerHTML = `
+          <div class="boss-card">
+            <h5>${b.bossName}</h5>
+            <p>Next Spawn: <strong>${new Date(b.nextSpawn).toLocaleString()}</strong></p>
+            <div class="countdown" id="countdown-${key}">--:--:--</div>
+          </div>`;
+        dashboardCards.appendChild(card);
+      });
+
+      // Edit + Delete
+      document.querySelectorAll(".edit-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const snap = await (await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"))
+            .get(ref(db, "bosses/" + btn.dataset.id));
+          if (snap.exists()) {
+            const b = snap.val();
+            bossName.value = b.bossName;
+            bossHour.value = b.bossHour;
+            lastKilled.value = b.lastKilled;
+            nextSpawn.value = b.nextSpawn;
+            editKey.value = btn.dataset.id;
+            document.getElementById("bossModalLabel").textContent = "Edit Boss";
+            bossModal.show();
+          }
+        });
+      });
+
+      document.querySelectorAll(".delete-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          if (confirm("Delete this boss?")) await remove(ref(db, "bosses/" + btn.dataset.id));
+        });
       });
     });
 
-    document.querySelectorAll(".delete-btn").forEach((btn) => {
-      btn.addEventListener("click", async () => {
-        const key = btn.dataset.key;
-        if (confirm("Delete this boss?")) {
-          await remove(ref(db, "bosses/" + key));
-          console.log("🟥 Deleted boss:", key);
+    // --- Countdown Update ---
+    setInterval(() => {
+      document.querySelectorAll(".countdown").forEach((el) => {
+        const key = el.id.replace("countdown-", "");
+        const card = el.closest(".boss-card");
+        const nextTimeText = card.querySelector("p strong").textContent;
+        const nextTime = new Date(nextTimeText);
+        const now = new Date();
+        const diff = nextTime - now;
+
+        if (isNaN(diff)) return (el.textContent = "--:--:--");
+        if (diff <= 0) {
+          el.textContent = "Spawned!";
+          el.style.color = "red";
+        } else {
+          const hrs = Math.floor(diff / 3600000);
+          const mins = Math.floor((diff % 3600000) / 60000);
+          const secs = Math.floor((diff % 60000) / 1000);
+          el.textContent = `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
         }
       });
-    });
-  }
-
-  // ✅ Real-time sync
-  onValue(ref(db, "bosses"), (snapshot) => {
-    const data = [];
-    snapshot.forEach((child) => {
-      data.push({ key: child.key, val: child.val() });
-    });
-    console.log("📦 Firebase data snapshot:", data);
-    render(data);
-    saveLocalBosses(data);
-  });
-
-  // ✅ Load cached data (fallback)
-  loadLocalBosses((cached) => {
-    if (cached.length > 0) render(cached);
-  });
-
-  // ✅ Countdown update loop
-  setInterval(() => {
-    document.querySelectorAll(".countdown").forEach((el) => {
-      const key = el.id.replace("countdown-", "");
-      const card = el.closest(".boss-card");
-      const nextTimeText = card.querySelector("p strong").textContent;
-      const nextTime = new Date(nextTimeText);
-      const now = new Date();
-
-      const diff = nextTime - now;
-      if (isNaN(diff)) { el.textContent = "--:--:--"; return; }
-
-      if (diff <= 0) {
-        el.textContent = "Spawned!";
-        el.style.color = "red";
-      } else {
-        const hrs = Math.floor(diff / 3600000);
-        const mins = Math.floor((diff % 3600000) / 60000);
-        const secs = Math.floor((diff % 60000) / 1000);
-        el.textContent = `${hrs.toString().padStart(2,"0")}:${mins.toString().padStart(2,"0")}:${secs.toString().padStart(2,"0")}`;
-      }
-    });
-  }, 1000);
-</script>
+    }, 1000);
+  </script>
 </body>
 </html>
