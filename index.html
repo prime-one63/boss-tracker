@@ -60,6 +60,12 @@
         <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
       </div>
     </div>
+    <div id="resetToast" class="toast align-items-center text-bg-info border-0" role="alert">
+      <div class="d-flex">
+        <div class="toast-body">🔄 Boss reset successfully!</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
   </div>
 
   <!-- Main Content -->
@@ -161,8 +167,9 @@
     const bossModal = new bootstrap.Modal(document.getElementById("bossModal"));
     const bossTable = document.querySelector("#bossTable tbody");
     const toast = new bootstrap.Toast(document.getElementById("saveToast"));
-    const dashboardCards = document.getElementById("dashboardCards");
+    const resetToast = new bootstrap.Toast(document.getElementById("resetToast"));
 
+    const dashboardCards = document.getElementById("dashboardCards");
     const bossName = document.getElementById("bossName");
     const bossHour = document.getElementById("bossHour");
     const lastKilled = document.getElementById("lastKilled");
@@ -262,7 +269,7 @@
           <td>${b.lastKilled}</td>
           <td>${b.nextSpawn}</td>
           <td>
-            <button class="btn btn-warning btn-sm edit-btn" data-id="${key}">Edit</button>
+            <button class="btn btn-warning btn-sm reset-btn" data-key="${key}">Reset</button>
             <button class="btn btn-danger btn-sm delete-btn" data-id="${key}">Delete</button>
           </td>`;
         bossTable.appendChild(tr);
@@ -279,24 +286,34 @@
         dashboardCards.appendChild(card);
       });
 
-      // Edit + Delete
-      document.querySelectorAll(".edit-btn").forEach((btn) => {
+      // 🔁 Reset Boss
+      document.querySelectorAll(".reset-btn").forEach((btn) => {
         btn.addEventListener("click", async () => {
-          const snap = await (await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"))
-            .get(ref(db, "bosses/" + btn.dataset.id));
-          if (snap.exists()) {
-            const b = snap.val();
-            bossName.value = b.bossName;
-            bossHour.value = b.bossHour;
-            lastKilled.value = b.lastKilled;
-            nextSpawn.value = b.nextSpawn;
-            editKey.value = btn.dataset.id;
-            document.getElementById("bossModalLabel").textContent = "Edit Boss";
-            bossModal.show();
-          }
+          const key = btn.dataset.key; // ✅ use "id", not "key"
+          const bossRef = ref(db, "bosses/" + key);
+
+          // Fetch the current data for this boss
+          const snap = await get(bossRef);
+          if (!snap.exists()) return alert("⚠️ Boss not found!");
+
+          const entry = snap.val();
+
+          if (!confirm(`Reset ${entry.bossName}?`)) return;
+
+          // Recalculate new spawn
+          const now = new Date();
+          const nextSpawnTime = new Date(now.getTime() + entry.bossHour * 60 * 60 * 1000);
+
+          await update(bossRef, {
+            lastKilled: now.toISOString(),
+            nextSpawn: nextSpawnTime.toISOString(),
+          });
+
+          resetToast.show();
         });
       });
 
+      // Delete
       document.querySelectorAll(".delete-btn").forEach((btn) => {
         btn.addEventListener("click", async () => {
           if (confirm("Delete this boss?")) await remove(ref(db, "bosses/" + btn.dataset.id));
