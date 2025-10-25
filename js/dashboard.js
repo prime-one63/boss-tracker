@@ -110,7 +110,7 @@ async function fetchAndRenderBosses() {
         const guild = b.guild || "";
         const guildTag = document.createElement("span");
         guildTag.textContent = guild;
-        guildTag.className = "guild-badge"; // use CSS class for consistent styling
+        guildTag.className = `guild-badge ${guild}`; // use CSS class for consistent styling
         
         card.appendChild(guildTag);
       }

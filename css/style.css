@@ -75,12 +75,12 @@ body {
   white-space: nowrap;
 }
 /* Color variants */
-.guild-badge.cloud9 { background-color: #00bfff; }
-.guild-badge.midnight { background-color: #333333; }
-.guild-badge.hellsing { background-color: #ff3b3b; }
-.guild-badge.sanctis { background-color: #28a745; }
-.guild-badge.celestials { background-color: #ffd54f; color: #111; }
-.guild-badge.ffa { background-color: #808080; }
+.guild-badge.Cloud9 { background-color: #00bfff; }
+.guild-badge.Midnight { background-color: #15388577; }
+.guild-badge.HellSing { background-color: #ff3b3b; }
+.guild-badge.Sanctis { background-color: #28a745; }
+.guild-badge.Celestials { background-color: #ffd54f; color: #111; }
+.guild-badge.FFA { background-color: #808080; }
 
 
 
