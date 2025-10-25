@@ -1,4 +1,7 @@
-body { background-color: #f8f9fa; }
+body { 
+  background-color: #212529;
+  color: #fff;
+}
 .sidebar {
   height: 100vh;
   background-color: #212529;
@@ -23,8 +26,62 @@ body { background-color: #f8f9fa; }
 .boss-card {
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  background: white;
+  background: #3f464e;
   padding: 20px;
   margin-bottom: 15px;
 }
 .countdown { font-size: 1.25rem; font-weight: 600; color: #0d6efd; }
+
+/* === Boss Spawn Status Colors === */
+/* .boss-card {
+  transition: background-color 0.5s ease, transform 0.2s ease;
+  padding: 10px;
+  border-radius: 10px;
+  margin: 10px;
+} */
+
+.boss-default {
+  background-color: #2b2b2b;
+  color: white;
+}
+
+.boss-soon {
+  background-color: #ffcc00;
+  color: #000;
+}
+
+.boss-spawning {
+  background-color: #ff3b3b;
+  color: white;
+  transform: scale(1.02);
+}
+
+.boss-card .badge {
+  margin-top: 8px;
+  font-size: 0.9em;
+}
+
+/* Small circular guild indicator */
+.guild-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  width: max-content;
+  border-radius: 10px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #fff;
+  background-color: #808080;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+/* Color variants */
+.guild-badge.cloud9 { background-color: #00bfff; }
+.guild-badge.midnight { background-color: #333333; }
+.guild-badge.hellsing { background-color: #ff3b3b; }
+.guild-badge.sanctis { background-color: #28a745; }
+.guild-badge.celestials { background-color: #ffd54f; color: #111; }
+.guild-badge.ffa { background-color: #808080; }
+
+
+
+

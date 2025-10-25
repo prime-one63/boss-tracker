@@ -6,17 +6,18 @@
 
   <div class="card p-3">
     <div class="table-responsive">
-      <table id="bossTable" class="table table-hover text-center align-middle">
+      <table id="bossTable" class="table table-striped table-bordered table-hover">
         <thead class="table-primary">
           <tr>
             <th>Boss</th>
+            <th>Guild</th>
             <th>Hour Spawn</th>
             <th>Last Killed</th>
             <th>Next Spawn</th>
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody></tbody>
+        <tbody id="bossTableBody"></tbody>
       </table>
     </div>
   </div>
@@ -36,6 +37,17 @@
           <div class="mb-3">
             <label class="form-label">Boss Name</label>
             <input type="text" class="form-control" id="bossName" required />
+          </div>
+          <div class="mb-3">
+            <label for="guild" class="form-label">Assigned Guild</label>
+            <select id="guild" class="form-select">
+              <option value="FFA" selected>FFA</option>
+              <option value="Cloud9">Cloud9</option>
+              <option value="Midnight">Midnight</option>
+              <option value="HellSing">HellSing</option>
+              <option value="Sanctis">Sanctis</option>
+              <option value="Celestials">Celestials</option>
+            </select>
           </div>
           <div class="mb-3">
             <label class="form-label">Spawn Interval (Hours)</label>
