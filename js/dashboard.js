@@ -166,14 +166,8 @@ async function fetchAndRenderBosses() {
 
       const nextDate = b._ts !== Infinity ? new Date(b._ts) : null;
       const spawnDisplay = nextDate
-        ? nextDate.toLocaleString([], { dateStyle: "short", timeStyle: "medium" })
+        ? nextDate.toLocaleString([], { dateStyle: "short", timeStyle: "short" })
         : "--";
-
-      const spawnInfo = document.createElement("p");
-      spawnInfo.innerHTML = `<span style="color:#666;">Next Spawn:</span> <strong>${spawnDisplay}</strong>`;
-      spawnInfo.style.fontSize = "0.95em";
-      spawnInfo.style.marginBottom = "8px";
-      card.appendChild(spawnInfo);
 
       const countdown = document.createElement("p");
       countdown.className = "countdown";
@@ -182,6 +176,11 @@ async function fetchAndRenderBosses() {
       countdown.textContent = formatCountdown(nextDate);
       card.appendChild(countdown);
 
+      const spawnInfo = document.createElement("p");
+      spawnInfo.innerHTML = `<span style="color:#666;">Spawn:</span> <strong>${spawnDisplay}</strong>`;
+      spawnInfo.style.fontSize = "1.2em";
+      spawnInfo.style.marginBottom = "8px";
+      card.appendChild(spawnInfo);
       dashboardCards.appendChild(card);
 
       // ⏱ Real-time countdown updater
