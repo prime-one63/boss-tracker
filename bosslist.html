@@ -41,7 +41,8 @@
           <div class="mb-3">
             <label for="guild" class="form-label">Assigned Guild</label>
             <select id="guild" class="form-select">
-              <option value="FFA" selected>FFA</option>
+              <option value="Faction" selected>Faction</option>
+              <option value="FFA">FFA</option>
               <option value="Cloud9">Cloud9</option>
               <option value="Midnight">Midnight</option>
               <option value="HellSing">HellSing</option>
@@ -49,13 +50,33 @@
               <option value="Celestials">Celestials</option>
             </select>
           </div>
+          <!-- Spawn Type -->
           <div class="mb-3">
-            <label class="form-label">Spawn Interval (Hours)</label>
-            <input type="number" class="form-control" id="bossHour" min="1" required />
+            <label class="form-label">Spawn Type</label><br>
+            <input type="radio" name="spawnType" id="spawnHourType" checked> Hour Interval
+            <input type="radio" name="spawnType" id="spawnScheduleType"> Scheduled Time
           </div>
-          <div class="mb-3">
+          <div id="hourGroup" class="mb-3">
+            <label class="form-label">Spawn Interval (Hours)</label>
+            <input type="number" class="form-control" id="bossHour" min="1" />
+          </div>
+          <div class="mb-3" id="scheduleGroup" style="display: none;">
+            <label for="bossSchedule" class="form-label">Date Schedule</label>
+            <select id="bossSchedule" class="form-select">
+              <option value="" selected></option>
+              <option value="Monday 11:30">Monday 11:30</option>
+              <option value="Monday 19:00">Monday 19:00</option>
+              <option value="Tuesday 11:30">Tuesday 11:30</option>
+              <option value="Tuesday 19:00">Tuesday 19:00</option>
+              <option value="Wednesday 11:30">Wednesday 11:30</option>
+              <option value="Thursday 11:30">Thursday 11:30</option>
+              <option value="Thursday 19:00">Thursday 19:00</option>
+              <option value="Sunday 17:00">Sunday 17:00</option>
+            </select>
+          </div>
+          <div class="mb-3" id="lastKilledField">
             <label class="form-label">Last Killed</label>
-            <input type="datetime-local" class="form-control" id="lastKilled" required />
+            <input type="datetime-local" class="form-control" id="lastKilled" />
           </div>
           <div class="mb-3">
             <label class="form-label">Next Spawn (Auto)</label>

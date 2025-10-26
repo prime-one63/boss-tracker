@@ -32,6 +32,14 @@ body {
 }
 .countdown { font-size: 1.25rem; font-weight: 600; color: #0d6efd; }
 
+.modal-header {
+  color: #000;
+}
+
+.modal-body {
+  color: #000;
+}
+
 /* === Boss Spawn Status Colors === */
 /* .boss-card {
   transition: background-color 0.5s ease, transform 0.2s ease;
@@ -81,6 +89,7 @@ body {
 .guild-badge.Sanctis { background-color: #28a745; }
 .guild-badge.Celestials { background-color: #ffd54f; color: #111; }
 .guild-badge.FFA { background-color: #808080; }
+.guild-badge.Faction { background-color: #8f5186; }
 
 
 
