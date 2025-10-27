@@ -93,15 +93,15 @@ export function initBossList() {
       lastKilledField.style.display = "block";
       scheduleGroup.style.display = "none";
       bossSchedule.value = "";
-      nextSpawn.value = "";
-      lastKilled.value = "";
+      // nextSpawn.value = "";
+      // lastKilled.value = "";
     } else {
       lastKilledField.style.display = "none";
       hourGroup.style.display = "none";
       scheduleGroup.style.display = "block";
       bossHour.value = "";
-      nextSpawn.value = "";
-      lastKilled.value = "";
+      // nextSpawn.value = "";
+      // lastKilled.value = "";
     }
     calcNextSpawn();
   }

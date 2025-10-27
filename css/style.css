@@ -31,6 +31,9 @@ body {
   margin-bottom: 15px;
 }
 .countdown { font-size: 1.25rem; font-weight: 600; color: #0d6efd; }
+p.countdown {
+  margin-bottom: 0 !important;
+}
 
 .modal-header {
   color: #000;
@@ -38,6 +41,10 @@ body {
 
 .modal-body {
   color: #000;
+}
+
+.text-uppercase {
+  text-transform: uppercase;
 }
 
 /* === Boss Spawn Status Colors === */
