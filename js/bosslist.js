@@ -173,6 +173,35 @@ export function initBossList() {
       bossTable.appendChild(tr);
     });
 
+  document.getElementById("btnAdd").addEventListener("click", clearBossForm);
+
+  function clearBossForm() {
+    // Clear text inputs
+    document.getElementById("bossName").value = "";
+    document.getElementById("bossName").focus();
+
+    // Clear select dropdowns
+    const guildSelect = document.getElementById("guild");
+    if (guildSelect) guildSelect.selectedIndex = 0;
+
+    // Clear date/time picker
+    const lastKilledInput = document.getElementById("lastKilled");
+    if (lastKilledInput) lastKilledInput.value = "";
+
+    // Clear next spawn display
+    const nextSpawnInput = document.getElementById("nextSpawn");
+    if (nextSpawnInput) nextSpawnInput.value = "";
+
+    // Reset radio buttons (spawn type)
+    const spawnTypeRadios = document.getElementsByName("spawnType");
+    spawnTypeRadios.forEach(radio => (radio.checked = false));
+
+    // Reset schedule dropdown
+    const scheduleSelect = document.getElementById("schedule");
+    if (scheduleSelect) scheduleSelect.selectedIndex = 0;
+
+    console.log("Form cleared successfully!");
+  }
     // --- EDIT BUTTON ---
     document.querySelectorAll(".edit-btn").forEach((btn) => {
       btn.addEventListener("click", async () => {

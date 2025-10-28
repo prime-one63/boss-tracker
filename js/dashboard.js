@@ -136,7 +136,10 @@ async function fetchAndRenderBosses() {
     // Reset layout
     dashboardCards.innerHTML = "";
     dashboardCards.style.display = "grid";
-    dashboardCards.style.gridTemplateColumns = "repeat(auto-fit, minmax(300px, 1fr))";
+    // dashboardCards.style.gridTemplateColumns = "repeat(auto-fit, minmax(300px, 1fr))";
+    dashboardCards.style.gridTemplateColumns = "repeat(auto-fill, minmax(300px, 1fr))";
+    dashboardCards.style.maxWidth = "1553px";
+    dashboardCards.style.margin = "0 auto";
     dashboardCards.style.gap = "1rem";
 
     // Render each boss tile
@@ -145,24 +148,65 @@ async function fetchAndRenderBosses() {
       card.className =
         "boss-tile bg-white rounded-2xl shadow p-4 transition-transform duration-200 hover:scale-[1.02]";
       card.style.display = "flex";
-      card.style.flexDirection = "column";
-      card.style.justifyContent = "space-between";
-      card.style.height = "150px";
+      card.style.alignItems = "center"; // ✅ align image and text side by side
+      card.style.justifyContent = "flex-start";
+      card.style.height = "120px";
       card.style.borderLeft = "6px solid #007bff";
       card.style.color = "black";
+      card.style.gap = "12px";
+
+      // ✅ Define image map
+      const bossImageMap = {
+        VENATUS: "img/venatus.png",
+        VIORENT: "img/viorent.png",
+        EGO: "img/ego.png",
+        LIVERA: "img/livera.png",
+        ARANEO: "img/araneo.png",
+        NEUTRO: "img/neutro.png",
+        SAPHIRUS: "img/saphirus.png",
+        THYMELE: "img/thymele.png",
+        UNDOMIEL: "img/undomiel.png",
+        WANNITAS: "img/wannitas.png",
+        DUPLICAN: "img/duplican.png",
+        METUS: "img/metus.png",
+        AMENTIS: "img/amentis.png",
+        CLEMANTIS: "img/clemantis.png",
+        TITORE: "img/titore.png",
+        GARETH: "img/gareth.png",
+      };
+
+      const imgSrc = bossImageMap[b.bossName] || "img/default.png";
+
+      // ✅ Boss image
+      const img = document.createElement("img");
+      img.src = imgSrc;
+      img.alt = b.bossName;
+      img.style.width = "80px";
+      // img.style.height = "60px";
+      // img.style.borderRadius = "8px";
+      img.style.objectFit = "cover";
+      img.style.flexShrink = "0";
+      card.appendChild(img);
+
+      // ✅ Info container (for text)
+      const info = document.createElement("div");
+      info.style.display = "flex";
+      info.style.flexDirection = "column";
+      info.style.justifyContent = "center";
+      info.style.flex = "1";
 
       const guild = b.guild || "FFA";
       const guildTag = document.createElement("span");
       guildTag.textContent = guild;
       guildTag.className = `guild-badge ${guild}`;
-      card.appendChild(guildTag);
+      info.appendChild(guildTag);
 
       const title = document.createElement("h3");
       title.textContent = b.bossName || "Unknown";
       title.style.fontWeight = "700";
       title.style.fontSize = "1.25rem";
       title.style.margin = "0";
-      card.appendChild(title);
+      info.appendChild(title);
 
       const nextDate = b._ts !== Infinity ? new Date(b._ts) : null;
       const spawnDisplay = nextDate
@@ -173,15 +217,19 @@ async function fetchAndRenderBosses() {
       countdown.className = "countdown";
       countdown.style.fontSize = "1.3em";
       countdown.style.fontWeight = "bold";
+      countdown.style.margin = "0";
       countdown.textContent = formatCountdown(nextDate);
-      card.appendChild(countdown);
+      info.appendChild(countdown);
 
       const spawnInfo = document.createElement("p");
       spawnInfo.innerHTML = `<span style="color:#666;">Spawn:</span> <strong>${spawnDisplay}</strong>`;
-      spawnInfo.style.fontSize = "1.2em";
-      spawnInfo.style.marginBottom = "8px";
-      card.appendChild(spawnInfo);
+      spawnInfo.style.fontSize = "1em";
+      spawnInfo.style.margin = "0";
+      info.appendChild(spawnInfo);
+
+      card.appendChild(info);
       dashboardCards.appendChild(card);
+
 
       // ⏱ Real-time countdown updater
       setInterval(() => {
