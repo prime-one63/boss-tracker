@@ -116,7 +116,7 @@ export function initBossList() {
     e.preventDefault();
     const guildVal = document.getElementById("guild").value || "FACTION";
     const entry = {
-      bossName: bossName.value.trim(),
+      bossName: bossName.value.trim().toUpperCase(),
       bossHour: spawnHourType.checked ? bossHour.value : "",
       bossSchedule: spawnScheduleType.checked ? bossSchedule.value : "",
       lastKilled: lastKilled.value,

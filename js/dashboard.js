@@ -173,9 +173,13 @@ async function fetchAndRenderBosses() {
         CLEMANTIS: "img/clemantis.png",
         TITORE: "img/titore.png",
         GARETH: "img/gareth.png",
+        LADYDALIA: "img/lady_dalia.png",
+        GENAQULUES: "img/gen_aquleus.png",
+        GENERALAQULES: "img/gen_aquleus.png",
       };
 
-      const imgSrc = bossImageMap[b.bossName] || "img/default.png";
+      const normalizedName = normalizeBossName(b.bossName);
+      const imgSrc = bossImageMap[normalizedName] || "img/default.png";
 
       // ✅ Boss image
       const img = document.createElement("img");
@@ -264,6 +268,12 @@ async function fetchAndRenderBosses() {
   } catch (err) {
     console.error("Error loading bosses:", err);
     dashboardCards.innerHTML = "<p>Error loading bosses</p>";
+  }
+
+  function normalizeBossName(name) {
+    return name
+      .toUpperCase()               // make it uppercase
+      .replace(/[^A-Z0-9]/g, "");  // remove all non-alphanumeric chars
   }
 }
 
